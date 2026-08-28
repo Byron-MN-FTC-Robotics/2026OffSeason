@@ -32,6 +32,7 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -58,8 +59,8 @@ public class swagtank extends OpMode{
     public DcMotor  leftDrive   = null;
     public DcMotor  rightDrive  = null;
     public DcMotor  toprunner    = null;
-    public Servo    leftClaw    = null;
-    public Servo    rightClaw   = null;
+    public CRServo    leftClaw    = null;
+    public CRServo    rightClaw   = null;
 
     double clawOffset = 0;
 
@@ -77,6 +78,8 @@ public class swagtank extends OpMode{
         leftDrive  = hardwareMap.get(DcMotor.class, "left_drive");
         rightDrive = hardwareMap.get(DcMotor.class, "right_drive");
         toprunner    = hardwareMap.get(DcMotor.class, "top_runner");
+        leftClaw    = hardwareMap.get(CRServo.class, "left_serve");
+        rightClaw    = hardwareMap.get(CRServo.class, "right_serve");
 
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // Pushing the left and right sticks forward MUST make robot go forward. So adjust these two lines based on your first test drive.
@@ -127,11 +130,16 @@ public class swagtank extends OpMode{
 
         // Use gamepad buttons to move the arm up (Y) and down (A)
         if (gamepad1.y)
-            toprunner.setPower(ARM_UP_POWER);
-        else if (gamepad1.a)
+        { toprunner.setPower(ARM_UP_POWER);
+            leftClaw.setPower(ARM_UP_POWER);
+            rightClaw.setPower(ARM_UP_POWER);
+    } else if (gamepad1.a) {
             toprunner.setPower(ARM_DOWN_POWER);
+            leftClaw.setPower(ARM_DOWN_POWER);
+            rightClaw.setPower(ARM_DOWN_POWER);
+        }
         else
-            toprunner.setPower(0.0);
+        {  toprunner.setPower(0.0); }
 
         // Send telemetry message to signify robot running;
         telemetry.addData("left",  "%.2f", left);
