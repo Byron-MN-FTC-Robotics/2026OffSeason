@@ -57,17 +57,17 @@ public class swagtank extends OpMode{
 
     /* Declare OpMode members. */
     public DcMotor  leftDrive   = null;
+    public DcMotor  Shooter   = null;
+    public CRServo  Feeder   = null;
     public DcMotor  rightDrive  = null;
-    public DcMotor  toprunner    = null;
+    public DcMotor  topClaw    = null;
     public CRServo    leftClaw    = null;
     public CRServo    rightClaw   = null;
 
-    double clawOffset = 0;
-
-    public static final double MID_SERVO   =  0.5 ;
-    public static final double CLAW_SPEED  = 0.02 ;        // sets rate to move servo
-    public static final double ARM_UP_POWER    =  0.50 ;   // Run arm motor up at 50% power
-    public static final double ARM_DOWN_POWER  = -0.25 ;   // Run arm motor down at -25% power
+    public static final double SHOOT_MAX_POWER    =  0.8 ;
+    public static final double SHOOT_REVERSE_POWER    =  -0.5 ;
+    public static final double ARM_UP_POWER    =  1 ;   // Run arm motor up at 50% power
+    public static final double ARM_DOWN_POWER  = -0.75 ;   // Run arm motor down at -25% power
 
     /*
      * Code to run ONCE when the driver hits INIT
@@ -77,22 +77,25 @@ public class swagtank extends OpMode{
         // Define and Initialize Motors
         leftDrive  = hardwareMap.get(DcMotor.class, "left_drive");
         rightDrive = hardwareMap.get(DcMotor.class, "right_drive");
-        toprunner    = hardwareMap.get(DcMotor.class, "top_runner");
-        leftClaw    = hardwareMap.get(CRServo.class, "left_serve");
-        rightClaw    = hardwareMap.get(CRServo.class, "right_serve");
+        topClaw  = hardwareMap.get(DcMotor.class, "top_claw");
+        leftClaw   = hardwareMap.get(CRServo.class, "left_claw");
+        rightClaw  = hardwareMap.get(CRServo.class, "right_claw");
+        Feeder  = hardwareMap.get(CRServo.class, "Feeder");
+        Shooter  = hardwareMap.get(DcMotor.class, "Shooter");
 
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // Pushing the left and right sticks forward MUST make robot go forward. So adjust these two lines based on your first test drive.
         // Note: The settings here assume direct drive on left and right wheels.  Gear Reduction or 90 Deg drives may require direction flips
         rightDrive.setDirection(DcMotor.Direction.REVERSE);
-        toprunner.setDirection(DcMotor.Direction.FORWARD);
+        topClaw.setDirection(DcMotor.Direction.FORWARD);
+        leftClaw.setDirection(CRServo.Direction.REVERSE);
+        rightClaw.setDirection(CRServo.Direction.FORWARD);
 
         // If there are encoders connected, switch to RUN_USING_ENCODER mode for greater accuracy
         leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // Define and initialize ALL installed servos.
-
 
         // Send telemetry message to signify robot waiting;
         telemetry.addData(">", "Robot Ready.  Press START. NOW, I SAID PRESS START. DO ITTTTTTTTT");    //
@@ -127,19 +130,35 @@ public class swagtank extends OpMode{
         leftDrive.setPower(left);
         rightDrive.setPower(right);
 
+        // Use triggers to run the good ol shooter! (right trigger shoot and right bumper to unshoot/unjam idk whatever ya wanna call it
+        if (gamepad1.right_trigger>0.2) {
+
+                Feeder.setPower(1.0);
+                Shooter.setPower(SHOOT_MAX_POWER);
+        } else if (gamepad1.right_bumper) {
+            Feeder.setPower(-1.0);
+            Shooter.setPower(SHOOT_REVERSE_POWER);
+        }
+        else
+        {  Shooter.setPower(0.0);
+            Feeder.setPower(0.0);
+        }
 
         // Use gamepad buttons to move the arm up (Y) and down (A)
-        if (gamepad1.y)
-        { toprunner.setPower(ARM_UP_POWER);
+        if (gamepad1.y) {
+            topClaw.setPower(ARM_UP_POWER);
             leftClaw.setPower(ARM_UP_POWER);
             rightClaw.setPower(ARM_UP_POWER);
-    } else if (gamepad1.a) {
-            toprunner.setPower(ARM_DOWN_POWER);
+        } else if (gamepad1.a) {
+            topClaw.setPower(ARM_DOWN_POWER);
             leftClaw.setPower(ARM_DOWN_POWER);
             rightClaw.setPower(ARM_DOWN_POWER);
         }
         else
-        {  toprunner.setPower(0.0); }
+        {  topClaw.setPower(0.0);
+            leftClaw.setPower(0.0);
+            rightClaw.setPower(0.0);
+        }
 
         // Send telemetry message to signify robot running;
         telemetry.addData("left",  "%.2f", left);
