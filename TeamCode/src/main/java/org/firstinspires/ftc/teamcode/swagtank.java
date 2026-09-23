@@ -37,7 +37,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
-
+import com.qualcomm.robotcore.util.ElapsedTime;
 /*
  * This OpMode executes a Tank Drive control TeleOp a direct drive robot
  * The code is structured as an Iterative OpMode
@@ -63,9 +63,11 @@ public class swagtank extends OpMode{
     public DcMotor  topClaw    = null;
     public CRServo    leftClaw    = null;
     public CRServo    rightClaw   = null;
-
+// determine timers
+private ElapsedTime timer = new ElapsedTime();
+//define variables
     public static final double SHOOT_MAX_POWER    =  0.8 ;
-    public static final double SHOOT_REVERSE_POWER    =  -0.5 ;
+    public static final double SHOOT_REVERSE_POWER    =  -0.6 ;
     public static final double ARM_UP_POWER    =  1 ;   // Run arm motor up at 50% power
     public static final double ARM_DOWN_POWER  = -0.75 ;   // Run arm motor down at -25% power
 
@@ -101,6 +103,8 @@ public class swagtank extends OpMode{
         telemetry.addData(">", "Robot Ready.  Press START. NOW, I SAID PRESS START. DO ITTTTTTTTT");    //
     }
 
+
+
     /*
      * Code to run REPEATEDLY after the driver hits INIT, but before they hit START
      */
@@ -132,16 +136,20 @@ public class swagtank extends OpMode{
 
         // Use triggers to run the good ol shooter! (right trigger shoot and right bumper to unshoot/unjam idk whatever ya wanna call it
         if (gamepad1.right_trigger>0.2) {
-
-                Feeder.setPower(1.0);
+             if (1.5 < timer.seconds()) {
+                 Feeder.setPower(0.6);
+             }
                 Shooter.setPower(SHOOT_MAX_POWER);
         } else if (gamepad1.right_bumper) {
-            Feeder.setPower(-1.0);
+            Feeder.setPower(-0.8);
             Shooter.setPower(SHOOT_REVERSE_POWER);
+            timer.reset();
         }
         else
-        {  Shooter.setPower(0.0);
+        {
+            Shooter.setPower(0.0);
             Feeder.setPower(0.0);
+            timer.reset();
         }
 
         // Use gamepad buttons to move the arm up (Y) and down (A)
@@ -163,7 +171,14 @@ public class swagtank extends OpMode{
         // Send telemetry message to signify robot running;
         telemetry.addData("left",  "%.2f", left);
         telemetry.addData("right", "%.2f", right);
-    }
+        telemetry.addData("timer", "%.2f", timer.seconds());
+       if (gamepad1.right_bumper) {
+           telemetry.addData("flywheel_set_speed", "%.2f", SHOOT_REVERSE_POWER);
+    } else {
+           telemetry.addData("flywheel_set_speed", "%.2f", gamepad1.right_trigger * SHOOT_MAX_POWER);
+       };
+       }
+
 
     /*
      * Code to run ONCE after the driver hits STOP
