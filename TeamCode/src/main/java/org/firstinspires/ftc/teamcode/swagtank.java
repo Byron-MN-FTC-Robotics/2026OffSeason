@@ -51,7 +51,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@TeleOp(name="Robot: Teleop Tank", group="Robot")
+@TeleOp(name="Tortl-hakkor-telop", group="Robot")
 //@Disabled
 public class swagtank extends OpMode{
 
@@ -66,7 +66,8 @@ public class swagtank extends OpMode{
 // determine timers
 private ElapsedTime timer = new ElapsedTime();
 //define variables
-    public static final double SHOOT_MAX_POWER    =  0.8 ;
+    public static final double SHOOT_MAX_POWER    =  0.51 ;
+    public static final double FEED_POWER    =  1.0 ;
     public static final double SHOOT_REVERSE_POWER    =  -0.6 ;
     public static final double ARM_UP_POWER    =  1 ;   // Run arm motor up at 50% power
     public static final double ARM_DOWN_POWER  = -0.75 ;   // Run arm motor down at -25% power
@@ -137,11 +138,11 @@ private ElapsedTime timer = new ElapsedTime();
         // Use triggers to run the good ol shooter! (right trigger shoot and right bumper to unshoot/unjam idk whatever ya wanna call it
         if (gamepad1.right_trigger>0.2) {
              if (1.5 < timer.seconds()) {
-                 Feeder.setPower(0.6);
+                 Feeder.setPower(FEED_POWER);
              }
                 Shooter.setPower(SHOOT_MAX_POWER);
         } else if (gamepad1.right_bumper) {
-            Feeder.setPower(-0.8);
+            Feeder.setPower(-FEED_POWER);
             Shooter.setPower(SHOOT_REVERSE_POWER);
             timer.reset();
         }
