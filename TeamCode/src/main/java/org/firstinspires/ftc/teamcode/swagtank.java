@@ -56,11 +56,13 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 public class swagtank extends OpMode{
 
     /* Declare OpMode members. */
-    public DcMotor  leftDrive   = null;
+    public DcMotor  frontleftDrive   = null;
     public DcMotor  Shooter   = null;
     public CRServo  Feeder   = null;
-    public DcMotor  rightDrive  = null;
+    public DcMotor  frontrightDrive  = null;
     public DcMotor  topClaw    = null;
+    public DcMotor  backrightDrive  = null;
+    public DcMotor  backleftDrive    = null;
     public CRServo    leftClaw    = null;
     public CRServo    rightClaw   = null;
 // determine timers
@@ -78,8 +80,10 @@ private ElapsedTime timer = new ElapsedTime();
     @Override
     public void init() {
         // Define and Initialize Motors
-        leftDrive  = hardwareMap.get(DcMotor.class, "left_drive");
-        rightDrive = hardwareMap.get(DcMotor.class, "right_drive");
+        frontleftDrive  = hardwareMap.get(DcMotor.class, "frontleft_drive");
+        frontrightDrive = hardwareMap.get(DcMotor.class, "frontright_drive");
+        backleftDrive  = hardwareMap.get(DcMotor.class, "backleft_drive");
+        backrightDrive = hardwareMap.get(DcMotor.class, "backright_drive");
         topClaw  = hardwareMap.get(DcMotor.class, "top_claw");
         leftClaw   = hardwareMap.get(CRServo.class, "left_claw");
         rightClaw  = hardwareMap.get(CRServo.class, "right_claw");
@@ -89,14 +93,17 @@ private ElapsedTime timer = new ElapsedTime();
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // Pushing the left and right sticks forward MUST make robot go forward. So adjust these two lines based on your first test drive.
         // Note: The settings here assume direct drive on left and right wheels.  Gear Reduction or 90 Deg drives may require direction flips
-        rightDrive.setDirection(DcMotor.Direction.REVERSE);
+        frontleftDrive.setDirection(DcMotor.Direction.REVERSE);
+        backrightDrive.setDirection(DcMotor.Direction.REVERSE);
         topClaw.setDirection(DcMotor.Direction.FORWARD);
         leftClaw.setDirection(CRServo.Direction.REVERSE);
         rightClaw.setDirection(CRServo.Direction.FORWARD);
 
         // If there are encoders connected, switch to RUN_USING_ENCODER mode for greater accuracy
-        leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backleftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backrightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontleftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontrightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // Define and initialize ALL installed servos.
 
@@ -125,16 +132,22 @@ private ElapsedTime timer = new ElapsedTime();
      */
     @Override
     public void loop() {
-        double left;
-        double right;
+
+
+        double y;
+        double x;
+        double turn;
+        y = -gamepad1.left_stick_y;
+        x = gamepad1.left_stick_x;
+        turn = gamepad1.right_stick_x;
+
+
 
         // Run wheels in tank mode (note: The joystick goes negative when pushed forward, so negate it)
-        left = -gamepad1.left_stick_y;
-        right = -gamepad1.right_stick_y;
-
-        leftDrive.setPower(left);
-        rightDrive.setPower(right);
-
+        frontrightDrive.setPower(y+x+-turn);
+        frontleftDrive.setPower(y+-x+turn);
+        backleftDrive.setPower(y+x+turn);
+        backrightDrive.setPower(y+-x+-turn);
         // Use triggers to run the good ol shooter! (right trigger shoot and right bumper to unshoot/unjam idk whatever ya wanna call it
         if (gamepad1.right_trigger>0.2) {
              if (1.5 < timer.seconds()) {
@@ -170,8 +183,7 @@ private ElapsedTime timer = new ElapsedTime();
         }
 
         // Send telemetry message to signify robot running;
-        telemetry.addData("left",  "%.2f", left);
-        telemetry.addData("right", "%.2f", right);
+
         telemetry.addData("timer", "%.2f", timer.seconds());
        if (gamepad1.right_bumper) {
            telemetry.addData("flywheel_set_speed", "%.2f", SHOOT_REVERSE_POWER);
