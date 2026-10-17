@@ -51,7 +51,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@TeleOp(name="Tortl-hakkor-telop", group="Robot")
+@TeleOp(name="Tortl-hakkor-telop-mech", group="Robot")
 //@Disabled
 public class swagtank extends OpMode{
 
@@ -68,7 +68,8 @@ public class swagtank extends OpMode{
 // determine timers
 private ElapsedTime timer = new ElapsedTime();
 //define variables
-    public static final double SHOOT_MAX_POWER    =  0.51 ;
+    public static final double MAX_DRIVE_SPEED = 0.9 ;
+    public static final double SHOOT_MAX_POWER    = 1.0 ;
     public static final double FEED_POWER    =  1.0 ;
     public static final double SHOOT_REVERSE_POWER    =  -0.6 ;
     public static final double ARM_UP_POWER    =  1 ;   // Run arm motor up at 50% power
@@ -137,17 +138,17 @@ private ElapsedTime timer = new ElapsedTime();
         double y;
         double x;
         double turn;
-        y = -gamepad1.left_stick_y;
-        x = gamepad1.left_stick_x;
+        y = -gamepad1.left_stick_y*MAX_DRIVE_SPEED;
+        x = gamepad1.left_stick_x*MAX_DRIVE_SPEED;
         turn = gamepad1.right_stick_x;
 
 
 
         // Run wheels in tank mode (note: The joystick goes negative when pushed forward, so negate it)
-        frontrightDrive.setPower(y+x+-turn);
-        frontleftDrive.setPower(y+-x+turn);
-        backleftDrive.setPower(y+x+turn);
-        backrightDrive.setPower(y+-x+-turn);
+        frontrightDrive.setPower((y+-x)*-turn);
+        frontleftDrive.setPower(y+x+turn);
+        backleftDrive.setPower(y+-x+turn);
+        backrightDrive.setPower(y+x+-turn);
         // Use triggers to run the good ol shooter! (right trigger shoot and right bumper to unshoot/unjam idk whatever ya wanna call it
         if (gamepad1.right_trigger>0.2) {
              if (1.5 < timer.seconds()) {

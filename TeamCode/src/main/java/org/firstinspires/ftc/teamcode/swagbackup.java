@@ -48,14 +48,14 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@TeleOp(name="Tortl-hakkor-old-telop", group="Robot")
-@Disabled
+@TeleOp(name="Tortl-hakkor-tank-teleop     ", group="Robot")
+// @Disabled
 public class swagbackup extends OpMode{
 
     /* Declare OpMode members. */
     public DcMotor  leftDrive   = null;
     public DcMotor  Shooter   = null;
-    public CRServo  Feeder   = null;
+    public DcMotor  Feeder   = null;
     public DcMotor  rightDrive  = null;
     public DcMotor  topClaw    = null;
     public CRServo    leftClaw    = null;
@@ -63,11 +63,11 @@ public class swagbackup extends OpMode{
 // determine timers
 private ElapsedTime timer = new ElapsedTime();
 //define variables
-    public static final double SHOOT_MAX_POWER    =  0.51 ;
-    public static final double FEED_POWER    =  1.0 ;
+    public static final double SHOOT_MAX_POWER    = 1.0 ;
+    public static final double FEED_POWER    = 1 ;
     public static final double SHOOT_REVERSE_POWER    =  -0.6 ;
-    public static final double ARM_UP_POWER    =  1 ;   // Run arm motor up at 50% power
-    public static final double ARM_DOWN_POWER  = -0.75 ;   // Run arm motor down at -25% power
+    public static final double ARM_UP_POWER    =  0.5 ;   // Run arm motor up at 50% powerswagbackup
+    public static final double ARM_DOWN_POWER  = -0.3 ;   // Run arm motor down at -25% power
 
     /*
      * Code to run ONCE when the driver hits INIT
@@ -80,7 +80,7 @@ private ElapsedTime timer = new ElapsedTime();
         topClaw  = hardwareMap.get(DcMotor.class, "top_claw");
         leftClaw   = hardwareMap.get(CRServo.class, "left_claw");
         rightClaw  = hardwareMap.get(CRServo.class, "right_claw");
-        Feeder  = hardwareMap.get(CRServo.class, "Feeder");
+        Feeder  = hardwareMap.get(DcMotor.class, "Feeder");
         Shooter  = hardwareMap.get(DcMotor.class, "Shooter");
 
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
@@ -88,6 +88,7 @@ private ElapsedTime timer = new ElapsedTime();
         // Note: The settings here assume direct drive on left and right wheels.  Gear Reduction or 90 Deg drives may require direction flips
         rightDrive.setDirection(DcMotor.Direction.REVERSE);
         topClaw.setDirection(DcMotor.Direction.FORWARD);
+        Shooter.setDirection(DcMotor.Direction.REVERSE);
         leftClaw.setDirection(CRServo.Direction.REVERSE);
         rightClaw.setDirection(CRServo.Direction.FORWARD);
 
