@@ -29,15 +29,17 @@
 
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.Range;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.hardware.IMU;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+
 /*
  * This OpMode executes a Tank Drive control TeleOp a direct drive robot
  * The code is structured as an Iterative OpMode
@@ -51,29 +53,26 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@TeleOp(name="Tortl-hakkor-telop-mech", group="Robot")
-//@Disabled
-public class swagtank extends OpMode{
+@TeleOp(name="Tortl-hakkor-tank-teleop     ", group="Robot")
+// @Disabled
+public class turtltank extends OpMode{
 
     /* Declare OpMode members. */
-    public DcMotor  frontleftDrive   = null;
+    public DcMotor  leftDrive   = null;
     public DcMotor  Shooter   = null;
-    public CRServo  Feeder   = null;
-    public DcMotor  frontrightDrive  = null;
+    public DcMotor  Feeder   = null;
+    public DcMotor  rightDrive  = null;
     public DcMotor  topClaw    = null;
-    public DcMotor  backrightDrive  = null;
-    public DcMotor  backleftDrive    = null;
     public CRServo    leftClaw    = null;
     public CRServo    rightClaw   = null;
 // determine timers
 private ElapsedTime timer = new ElapsedTime();
 //define variables
-    public static final double MAX_DRIVE_SPEED = 0.9 ;
-    public static final double SHOOT_MAX_POWER    = 1.0 ;
-    public static final double FEED_POWER    =  1.0 ;
+    public static final double SHOOT_MAX_POWER    = -0.6  ;
+    public static final double FEED_POWER    = 1 ;
     public static final double SHOOT_REVERSE_POWER    =  -0.6 ;
-    public static final double ARM_UP_POWER    =  1 ;   // Run arm motor up at 50% power
-    public static final double ARM_DOWN_POWER  = -0.75 ;   // Run arm motor down at -25% power
+    public static final double ARM_UP_POWER    =  0.5 ;   // Run arm motor up at 50% powerswagbackup
+    public static final double ARM_DOWN_POWER  = -0.3 ;   // Run arm motor down at -25% power
 
     /*
      * Code to run ONCE when the driver hits INIT
@@ -81,30 +80,26 @@ private ElapsedTime timer = new ElapsedTime();
     @Override
     public void init() {
         // Define and Initialize Motors
-        frontleftDrive  = hardwareMap.get(DcMotor.class, "frontleft_drive");
-        frontrightDrive = hardwareMap.get(DcMotor.class, "frontright_drive");
-        backleftDrive  = hardwareMap.get(DcMotor.class, "backleft_drive");
-        backrightDrive = hardwareMap.get(DcMotor.class, "backright_drive");
+        leftDrive  = hardwareMap.get(DcMotor.class, "left_drive");
+        rightDrive = hardwareMap.get(DcMotor.class, "right_drive");
         topClaw  = hardwareMap.get(DcMotor.class, "top_claw");
         leftClaw   = hardwareMap.get(CRServo.class, "left_claw");
         rightClaw  = hardwareMap.get(CRServo.class, "right_claw");
-        Feeder  = hardwareMap.get(CRServo.class, "Feeder");
+        Feeder  = hardwareMap.get(DcMotor.class, "Feeder");
         Shooter  = hardwareMap.get(DcMotor.class, "Shooter");
 
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // Pushing the left and right sticks forward MUST make robot go forward. So adjust these two lines based on your first test drive.
         // Note: The settings here assume direct drive on left and right wheels.  Gear Reduction or 90 Deg drives may require direction flips
-        frontleftDrive.setDirection(DcMotor.Direction.REVERSE);
-        backrightDrive.setDirection(DcMotor.Direction.REVERSE);
+        rightDrive.setDirection(DcMotor.Direction.REVERSE);
         topClaw.setDirection(DcMotor.Direction.FORWARD);
+        Shooter.setDirection(DcMotor.Direction.REVERSE);
         leftClaw.setDirection(CRServo.Direction.REVERSE);
         rightClaw.setDirection(CRServo.Direction.FORWARD);
 
         // If there are encoders connected, switch to RUN_USING_ENCODER mode for greater accuracy
-        backleftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        backrightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        frontleftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        frontrightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // Define and initialize ALL installed servos.
 
@@ -133,29 +128,25 @@ private ElapsedTime timer = new ElapsedTime();
      */
     @Override
     public void loop() {
-
-
-        double y;
-        double x;
-        double turn;
-        y = -gamepad1.left_stick_y*MAX_DRIVE_SPEED;
-        x = gamepad1.left_stick_x*MAX_DRIVE_SPEED;
-        turn = gamepad1.right_stick_x;
-
-
+        double left;
+        double right;
 
         // Run wheels in tank mode (note: The joystick goes negative when pushed forward, so negate it)
-        frontrightDrive.setPower((y+-x)*-turn);
-        frontleftDrive.setPower(y+x+turn);
-        backleftDrive.setPower(y+-x+turn);
-        backrightDrive.setPower(y+x+-turn);
+        left = -gamepad1.left_stick_y;
+        right = -gamepad1.right_stick_y;
+
+        leftDrive.setPower(left);
+        rightDrive.setPower(right);
+
         // Use triggers to run the good ol shooter! (right trigger shoot and right bumper to unshoot/unjam idk whatever ya wanna call it
-        if (gamepad1.right_trigger>0.2) {
-             if (1.5 < timer.seconds()) {
+        if (gamepad2.right_trigger>0.2) {
+             if (2.5 < timer.seconds()) {
                  Feeder.setPower(FEED_POWER);
-             }
-                Shooter.setPower(SHOOT_MAX_POWER);
-        } else if (gamepad1.right_bumper) {
+             } else {
+                 Feeder.setPower(-0.5);
+            }
+            Shooter.setPower(SHOOT_MAX_POWER);
+        } else if (gamepad2.right_bumper) {
             Feeder.setPower(-FEED_POWER);
             Shooter.setPower(SHOOT_REVERSE_POWER);
             timer.reset();
@@ -168,11 +159,11 @@ private ElapsedTime timer = new ElapsedTime();
         }
 
         // Use gamepad buttons to move the arm up (Y) and down (A)
-        if (gamepad1.y) {
+        if (gamepad2.y) {
             topClaw.setPower(ARM_UP_POWER);
             leftClaw.setPower(ARM_UP_POWER);
             rightClaw.setPower(ARM_UP_POWER);
-        } else if (gamepad1.a) {
+        } else if (gamepad2.a) {
             topClaw.setPower(ARM_DOWN_POWER);
             leftClaw.setPower(ARM_DOWN_POWER);
             rightClaw.setPower(ARM_DOWN_POWER);
@@ -184,7 +175,8 @@ private ElapsedTime timer = new ElapsedTime();
         }
 
         // Send telemetry message to signify robot running;
-
+        telemetry.addData("left",  "%.2f", left);
+        telemetry.addData("right", "%.2f", right);
         telemetry.addData("timer", "%.2f", timer.seconds());
        if (gamepad1.right_bumper) {
            telemetry.addData("flywheel_set_speed", "%.2f", SHOOT_REVERSE_POWER);
@@ -199,5 +191,6 @@ private ElapsedTime timer = new ElapsedTime();
      */
     @Override
     public void stop() {
+        telemetry.addData(">", "Aww man I'm done nowww?");
     }
 }

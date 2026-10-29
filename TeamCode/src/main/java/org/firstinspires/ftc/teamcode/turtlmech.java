@@ -1,0 +1,199 @@
+/* Copyright (c) 2017 FIRST. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without modification,
+ * are permitted (subject to the limitations in the disclaimer below) provided that
+ * the following conditions are met:
+ *
+ * Redistributions of source code must retain the above copyright notice, this list
+ * of conditions and the following disclaimer.
+ *
+ * Redistributions in binary form must reproduce the above copyright notice, this
+ * list of conditions and the following disclaimer in the documentation and/or
+ * other materials provided with the distribution.
+ *
+ * Neither the name of FIRST nor the names of its contributors may be used to endorse or
+ * promote products derived from this software without specific prior written permission.
+ *
+ * NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE GRANTED BY THIS
+ * LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+package org.firstinspires.ftc.teamcode;
+
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.util.ElapsedTime;
+/*
+ * This OpMode executes a Tank Drive control TeleOp a direct drive robot
+ * The code is structured as an Iterative OpMode
+ *
+ * In this mode, the left and right joysticks control the left and right motors respectively.
+ * Pushing a joystick forward will make the attached motor drive forward.
+ * It raises and lowers the claw using the Gamepad Y and A buttons respectively.
+ * It also opens and closes the claws slowly using the left and right Bumper buttons.
+ *
+ * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
+ * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
+ */
+
+@TeleOp(name="Tortl-hakkor-telop-mech", group="Robot")
+//@Disabled
+public class turtlmech extends OpMode{
+
+    /* Declare OpMode members. */
+    public DcMotor  frontleftDrive   = null;
+    public DcMotor  Shooter   = null;
+    public CRServo  Feeder   = null;
+    public DcMotor  frontrightDrive  = null;
+    public DcMotor  topClaw    = null;
+    public DcMotor  backrightDrive  = null;
+    public DcMotor  backleftDrive    = null;
+    public CRServo    leftClaw    = null;
+    public CRServo    rightClaw   = null;
+// determine timers
+private ElapsedTime timer = new ElapsedTime();
+//define variables
+    public static final double MAX_DRIVE_SPEED = 1 ;
+    public static final double SHOOT_MAX_POWER    = 0.6 ;
+    public static final double FEED_POWER    =  1.0 ;
+    public static final double SHOOT_REVERSE_POWER    =  -0.6 ;
+    public static final double ARM_UP_POWER    =  1 ;   // Run arm motor up at 50% power
+    public static final double ARM_DOWN_POWER  = -0.75 ;   // Run arm motor down at -25% power
+
+    /*
+     * Code to run ONCE when the driver hits INIT
+     */
+    @Override
+    public void init() {
+        // Define and Initialize Motors
+        frontleftDrive  = hardwareMap.get(DcMotor.class, "frontleft_drive");
+        frontrightDrive = hardwareMap.get(DcMotor.class, "frontright_drive");
+        backleftDrive  = hardwareMap.get(DcMotor.class, "backleft_drive");
+        backrightDrive = hardwareMap.get(DcMotor.class, "backright_drive");
+        topClaw  = hardwareMap.get(DcMotor.class, "top_claw");
+        leftClaw   = hardwareMap.get(CRServo.class, "left_claw");
+        rightClaw  = hardwareMap.get(CRServo.class, "right_claw");
+        Feeder  = hardwareMap.get(CRServo.class, "Feeder");
+        Shooter  = hardwareMap.get(DcMotor.class, "Shooter");
+
+        // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
+        // Pushing the left and right sticks forward MUST make robot go forward. So adjust these two lines based on your first test drive.
+        // Note: The settings here assume direct drive on left and right wheels.  Gear Reduction or 90 Deg drives may require direction flips
+        frontleftDrive.setDirection(DcMotor.Direction.REVERSE);
+        backrightDrive.setDirection(DcMotor.Direction.REVERSE);
+        topClaw.setDirection(DcMotor.Direction.FORWARD);
+        leftClaw.setDirection(CRServo.Direction.REVERSE);
+        rightClaw.setDirection(CRServo.Direction.FORWARD);
+
+        // If there are encoders connected, switch to RUN_USING_ENCODER mode for greater accuracy
+        backleftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backrightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontleftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontrightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        // Define and initialize ALL installed servos.
+
+        // Send telemetry message to signify robot waiting;
+        telemetry.addData(">", "Robot Ready.  Press START. NOW, I SAID PRESS START. DO ITTTTTTTTT");    //
+    }
+
+
+
+    /*
+     * Code to run REPEATEDLY after the driver hits INIT, but before they hit START
+     */
+    @Override
+    public void init_loop() {
+    }
+
+    /*
+     * Code to run ONCE when the driver hits START
+     */
+    @Override
+    public void start() {
+    }
+
+    /*
+     * Code to run REPEATEDLY after the driver hits START but before they hit STOP
+     */
+    @Override
+    public void loop() {
+
+
+        double y;
+        double x;
+        double turn;
+        y = -gamepad1.left_stick_y*MAX_DRIVE_SPEED;
+        x = gamepad1.left_stick_x*MAX_DRIVE_SPEED;
+        turn = gamepad1.right_stick_x;
+
+
+
+        // Run wheels in tank mode (note: The joystick goes negative when pushed forward, so negate it)
+        frontrightDrive.setPower((y+-x)*-turn);
+        frontleftDrive.setPower(y+x+turn);
+        backleftDrive.setPower(y+-x+turn);
+        backrightDrive.setPower(y+x+-turn);
+        // Use triggers to run the good ol shooter! (right trigger shoot and right bumper to unshoot/unjam idk whatever ya wanna call it
+        if (gamepad1.right_trigger>0.2) {
+             if (1.5 < timer.seconds()) {
+                 Feeder.setPower(FEED_POWER);
+             }
+                Shooter.setPower(SHOOT_MAX_POWER);
+        } else if (gamepad1.right_bumper) {
+            Feeder.setPower(-FEED_POWER);
+            Shooter.setPower(SHOOT_REVERSE_POWER);
+            timer.reset();
+        }
+        else
+        {
+            Shooter.setPower(0.0);
+            Feeder.setPower(0.0);
+            timer.reset();
+        }
+
+        // Use gamepad buttons to move the arm up (Y) and down (A)
+        if (gamepad1.y) {
+            topClaw.setPower(ARM_UP_POWER);
+            leftClaw.setPower(ARM_UP_POWER);
+            rightClaw.setPower(ARM_UP_POWER);
+        } else if (gamepad1.a) {
+            topClaw.setPower(ARM_DOWN_POWER);
+            leftClaw.setPower(ARM_DOWN_POWER);
+            rightClaw.setPower(ARM_DOWN_POWER);
+        }
+        else
+        {  topClaw.setPower(0.0);
+            leftClaw.setPower(0.0);
+            rightClaw.setPower(0.0);
+        }
+
+        // Send telemetry message to signify robot running;
+
+        telemetry.addData("timer", "%.2f", timer.seconds());
+       if (gamepad1.right_bumper) {
+           telemetry.addData("flywheel_set_speed", "%.2f", SHOOT_REVERSE_POWER);
+    } else {
+           telemetry.addData("flywheel_set_speed", "%.2f", gamepad1.right_trigger * SHOOT_MAX_POWER);
+       };
+       }
+
+
+    /*
+     * Code to run ONCE after the driver hits STOP
+     */
+    @Override
+    public void stop() {
+    }
+}
