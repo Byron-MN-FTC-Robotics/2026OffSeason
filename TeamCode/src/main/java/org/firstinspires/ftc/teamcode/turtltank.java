@@ -33,12 +33,9 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.hardware.IMU;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
-import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
 /*
  * This OpMode executes a Tank Drive control TeleOp a direct drive robot
@@ -53,23 +50,23 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@TeleOp(name="Tortl-hakkor-tank-teleop     ", group="Robot")
+@TeleOp(name="Tortl-hakkor-tank-teleop", group="Robot")
 // @Disabled
 public class turtltank extends OpMode{
 
     /* Declare OpMode members. */
     public DcMotor  leftDrive   = null;
-    public DcMotor  Shooter   = null;
+    public DcMotorEx  Shooter   = null;
     public DcMotor  Feeder   = null;
     public DcMotor  rightDrive  = null;
     public DcMotor  topClaw    = null;
     public CRServo    leftClaw    = null;
     public CRServo    rightClaw   = null;
-// determine timers
-private ElapsedTime timer = new ElapsedTime();
-//define variables
-    public static final double SHOOT_MAX_POWER    = -0.6  ;
-    public static final double FEED_POWER    = 1 ;
+    // determine timers
+    private final ElapsedTime timer = new ElapsedTime();
+    //define variables
+    public static final double SHOOT_MAX_POWER    = 0.6  ;
+    public static final double FEED_POWER    = 0.8 ;
     public static final double SHOOT_REVERSE_POWER    =  -0.6 ;
     public static final double ARM_UP_POWER    =  0.5 ;   // Run arm motor up at 50% powerswagbackup
     public static final double ARM_DOWN_POWER  = -0.3 ;   // Run arm motor down at -25% power
@@ -80,27 +77,29 @@ private ElapsedTime timer = new ElapsedTime();
     @Override
     public void init() {
         // Define and Initialize Motors
-        leftDrive  = hardwareMap.get(DcMotor.class, "left_drive");
-        rightDrive = hardwareMap.get(DcMotor.class, "right_drive");
+        leftDrive  = hardwareMap.get(DcMotorEx.class, "left_drive");
+        rightDrive = hardwareMap.get(DcMotorEx.class, "right_drive");
         topClaw  = hardwareMap.get(DcMotor.class, "top_claw");
         leftClaw   = hardwareMap.get(CRServo.class, "left_claw");
         rightClaw  = hardwareMap.get(CRServo.class, "right_claw");
         Feeder  = hardwareMap.get(DcMotor.class, "Feeder");
-        Shooter  = hardwareMap.get(DcMotor.class, "Shooter");
+        Shooter  = hardwareMap.get(DcMotorEx.class, "Shooter");
 
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // Pushing the left and right sticks forward MUST make robot go forward. So adjust these two lines based on your first test drive.
         // Note: The settings here assume direct drive on left and right wheels.  Gear Reduction or 90 Deg drives may require direction flips
         rightDrive.setDirection(DcMotor.Direction.REVERSE);
         topClaw.setDirection(DcMotor.Direction.FORWARD);
-        Shooter.setDirection(DcMotor.Direction.REVERSE);
         leftClaw.setDirection(CRServo.Direction.REVERSE);
         rightClaw.setDirection(CRServo.Direction.FORWARD);
 
         // If there are encoders connected, switch to RUN_USING_ENCODER mode for greater accuracy
+
         leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
+        rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        leftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         // Define and initialize ALL installed servos.
 
         // Send telemetry message to signify robot waiting;
@@ -121,6 +120,7 @@ private ElapsedTime timer = new ElapsedTime();
      */
     @Override
     public void start() {
+
     }
 
     /*
@@ -130,22 +130,27 @@ private ElapsedTime timer = new ElapsedTime();
     public void loop() {
         double left;
         double right;
-
         // Run wheels in tank mode (note: The joystick goes negative when pushed forward, so negate it)
         left = -gamepad1.left_stick_y;
         right = -gamepad1.right_stick_y;
-
-        leftDrive.setPower(left);
-        rightDrive.setPower(right);
+        if (!gamepad1.a) {
+            leftDrive.setPower(left);
+            rightDrive.setPower(right);
+        } else {
+            leftDrive.setPower(0);
+            rightDrive.setPower(0);
+        }
 
         // Use triggers to run the good ol shooter! (right trigger shoot and right bumper to unshoot/unjam idk whatever ya wanna call it
         if (gamepad2.right_trigger>0.2) {
-             if (2.5 < timer.seconds()) {
-                 Feeder.setPower(FEED_POWER);
-             } else {
-                 Feeder.setPower(-0.5);
+            if (1100 < Shooter.getVelocity()) {
+                Feeder.setPower(FEED_POWER);
+            } else {
+                Feeder.setPower(-FEED_POWER);
             }
-            Shooter.setPower(SHOOT_MAX_POWER);
+            if (1125 > Shooter.getVelocity()) {
+                Shooter.setPower(SHOOT_MAX_POWER);
+            }
         } else if (gamepad2.right_bumper) {
             Feeder.setPower(-FEED_POWER);
             Shooter.setPower(SHOOT_REVERSE_POWER);
@@ -157,6 +162,7 @@ private ElapsedTime timer = new ElapsedTime();
             Feeder.setPower(0.0);
             timer.reset();
         }
+
 
         // Use gamepad buttons to move the arm up (Y) and down (A)
         if (gamepad2.y) {
@@ -178,12 +184,15 @@ private ElapsedTime timer = new ElapsedTime();
         telemetry.addData("left",  "%.2f", left);
         telemetry.addData("right", "%.2f", right);
         telemetry.addData("timer", "%.2f", timer.seconds());
-       if (gamepad1.right_bumper) {
-           telemetry.addData("flywheel_set_speed", "%.2f", SHOOT_REVERSE_POWER);
-    } else {
-           telemetry.addData("flywheel_set_speed", "%.2f", gamepad1.right_trigger * SHOOT_MAX_POWER);
-       };
-       }
+        telemetry.addData("shoot-speed", "%.2f", Shooter.getVelocity());
+
+        if (gamepad1.right_bumper) {
+            telemetry.addData("flywheel_set_speed", "%.2f", SHOOT_REVERSE_POWER);
+        } else {
+            telemetry.addData("flywheel_set_speed", "%.2f", gamepad1.right_trigger * SHOOT_MAX_POWER);
+        };
+
+    }
 
 
     /*
