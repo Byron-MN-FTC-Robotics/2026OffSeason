@@ -68,7 +68,7 @@ public class turtltank extends OpMode{
 // determine timers
 private ElapsedTime timer = new ElapsedTime();
 //define variables
-    public static final double SHOOT_MAX_POWER    = -0.6  ;
+    public static final double SHOOT_MAX_POWER    = 0.6  ;
     public static final double FEED_POWER    = 1 ;
     public static final double SHOOT_REVERSE_POWER    =  -0.6 ;
     public static final double ARM_UP_POWER    =  0.5 ;   // Run arm motor up at 50% powerswagbackup
@@ -100,7 +100,8 @@ private ElapsedTime timer = new ElapsedTime();
         // If there are encoders connected, switch to RUN_USING_ENCODER mode for greater accuracy
         leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
+        leftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         // Define and initialize ALL installed servos.
 
         // Send telemetry message to signify robot waiting;
@@ -183,6 +184,7 @@ private ElapsedTime timer = new ElapsedTime();
     } else {
            telemetry.addData("flywheel_set_speed", "%.2f", gamepad1.right_trigger * SHOOT_MAX_POWER);
        };
+
        }
 
 

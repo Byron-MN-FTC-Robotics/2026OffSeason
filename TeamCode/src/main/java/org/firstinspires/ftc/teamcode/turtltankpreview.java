@@ -29,12 +29,11 @@
 
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 /*
@@ -45,14 +44,14 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Pushing a joystick forward will make the attached motor drive forward.
  * It raises and lowers the claw using the Gamepad Y and A buttons respectively.
  * It also opens and closes the claws slowly using the left and right Bumper buttons.
-
+ *
  * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@TeleOp(name="Tortl-hakkor-tank-auto-old", group="Robot")
+@TeleOp(name="Tortl-hakkor-tank-teleop-preview", group="Robot")
 // @Disabled
-public class turtlautotankold extends OpMode{
+public class turtltankpreview extends OpMode{
 
     /* Declare OpMode members. */
     public DcMotor  leftDrive   = null;
@@ -65,30 +64,19 @@ public class turtlautotankold extends OpMode{
 // determine timers
 private ElapsedTime timer = new ElapsedTime();
 //define variables
-    public static final double SHOOT_MAX_POWER    = 1.0 ;
-    public static final double FEED_POWER    = 0.5 ;
-    int position = 0;
+    public static final double SHOOT_MAX_POWER    = 0.6  ;
+    public static final double FEED_POWER    = 1 ;
     public static final double SHOOT_REVERSE_POWER    =  -0.6 ;
-    public int currentPosition = 6741;
     public static final double ARM_UP_POWER    =  0.5 ;   // Run arm motor up at 50% powerswagbackup
     public static final double ARM_DOWN_POWER  = -0.3 ;   // Run arm motor down at -25% power
-
+    int checkInterval = 200;
+    int prevPosition = 0;
+    int speed = 0;
     /*
      * Code to run ONCE when the driver hits INIT
-     *
-     *use this to get dir!
-     * double robotYaw = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
-
      */
     @Override
     public void init() {
-        IMU imu = hardwareMap.get(IMU.class, "imu");
-        RevHubOrientationOnRobot.LogoFacingDirection logo = RevHubOrientationOnRobot.LogoFacingDirection.RIGHT;
-        RevHubOrientationOnRobot.UsbFacingDirection usb = RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD;
-
-        RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logo, usb);
-        imu.initialize(new IMU.Parameters(orientationOnRobot));
-
         // Define and Initialize Motors
         leftDrive  = hardwareMap.get(DcMotor.class, "left_drive");
         rightDrive = hardwareMap.get(DcMotor.class, "right_drive");
@@ -96,7 +84,7 @@ private ElapsedTime timer = new ElapsedTime();
         leftClaw   = hardwareMap.get(CRServo.class, "left_claw");
         rightClaw  = hardwareMap.get(CRServo.class, "right_claw");
         Feeder  = hardwareMap.get(DcMotor.class, "Feeder");
-        Shooter  = hardwareMap.get(DcMotor.class, "Shooter");
+        Shooter  = hardwareMap.get(DcMotorEx.class, "Shooter");
 
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // Pushing the left and right sticks forward MUST make robot go forward. So adjust these two lines based on your first test drive.
@@ -107,15 +95,16 @@ private ElapsedTime timer = new ElapsedTime();
         leftClaw.setDirection(CRServo.Direction.REVERSE);
         rightClaw.setDirection(CRServo.Direction.FORWARD);
 
-
-
         // If there are encoders connected, switch to RUN_USING_ENCODER mode for greater accuracy
+
         leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
+        rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        leftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         // Define and initialize ALL installed servos.
-        int position = leftDrive.getCurrentPosition();
-        // Send telemetry message to signify robot waiting;
+
+        // Send telemetry message to signify robot waiting; 
         telemetry.addData(">", "Robot Ready.  Press START. NOW, I SAID PRESS START. DO ITTTTTTTTT");    //
     }
 
@@ -126,40 +115,101 @@ private ElapsedTime timer = new ElapsedTime();
      */
     @Override
     public void init_loop() {
-
     }
 
     /*
      * Code to run ONCE when the driver hits START
-     *
-     * Btw this is where annoying crap starts ;D
      */
     @Override
     public void start() {
-        timer.reset();
-        leftDrive.setPower(0);
-        rightDrive.setPower(0);
+
     }
-    @Override
-    public void loop() {
-        int encodeleft = leftDrive.getCurrentPosition();
-       while (encodeleft == )
-        requestOpModeStop();
-    }
-
-
-}
-
-
-
-
 
     /*
      * Code to run REPEATEDLY after the driver hits START but before they hit STOP
      */
+    @Override
+    public void loop() {
+        double left;
+        double right;
+        //copied and pasted reddit code
+        prevPosition = Shooter.getCurrentPosition();
+        ElapsedTime timer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+        timer.reset();
+
+            if (timer.time() > checkInterval) {
+                speed = (int) ((Shooter.getCurrentPosition() - prevPosition) / timer.time());
+
+                // This will print out the ticks per millisecond of the motor.
+
+                prevPosition = Shooter.getCurrentPosition();
+                timer.reset();
+
+        }
+        // end of that reddet cod
+        // Run wheels in tank mode (note: The joystick goes negative when pushed forward, so negate it)
+        left = -gamepad1.left_stick_y;
+        right = -gamepad1.right_stick_y;
+
+        leftDrive.setPower(left);
+        rightDrive.setPower(right);
+
+        // Use triggers to run the good ol shooter! (right trigger shoot and right bumper to unshoot/unjam idk whatever ya wanna call it
+        if (gamepad2.right_trigger>0.2) {
+             if (0.9 < speed) {
+                 Feeder.setPower(FEED_POWER);
+             } else {
+                 Feeder.setPower(-0.5);
+            }
+            Shooter.setPower(SHOOT_MAX_POWER);
+        } else if (gamepad2.right_bumper) {
+            Feeder.setPower(-FEED_POWER);
+            Shooter.setPower(SHOOT_REVERSE_POWER);
+            timer.reset();
+        }
+        else
+        {
+            Shooter.setPower(0.0);
+            Feeder.setPower(0.0);
+            timer.reset();
+        }
+
+        // Use gamepad buttons to move the arm up (Y) and down (A)
+        if (gamepad2.y) {
+            topClaw.setPower(ARM_UP_POWER);
+            leftClaw.setPower(ARM_UP_POWER);
+            rightClaw.setPower(ARM_UP_POWER);
+        } else if (gamepad2.a) {
+            topClaw.setPower(ARM_DOWN_POWER);
+            leftClaw.setPower(ARM_DOWN_POWER);
+            rightClaw.setPower(ARM_DOWN_POWER);
+        }
+        else
+        {  topClaw.setPower(0.0);
+            leftClaw.setPower(0.0);
+            rightClaw.setPower(0.0);
+        }
+
+        // Send telemetry message to signify robot running;
+        telemetry.addData("left",  "%.2f", left);
+        telemetry.addData("right", "%.2f", right);
+        telemetry.addData("timer", "%.2f", timer.seconds());
+        telemetry.addData("shoot-speed", "%.2f", speed);
+
+       if (gamepad1.right_bumper) {
+           telemetry.addData("flywheel_set_speed", "%.2f", SHOOT_REVERSE_POWER);
+    } else {
+           telemetry.addData("flywheel_set_speed", "%.2f", gamepad1.right_trigger * SHOOT_MAX_POWER);
+       };
+
+       }
 
 
-
-
-
-//
+    /*
+     * Code to run ONCE after the driver hits STOP
+     */
+    @Override
+    public void stop() {
+        telemetry.addData(">", "Aww man I'm done nowww?");
+    }
+}

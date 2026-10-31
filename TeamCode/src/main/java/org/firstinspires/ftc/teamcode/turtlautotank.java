@@ -52,26 +52,26 @@ import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 
 @TeleOp(name="Tortl-hakkor-tank-auto", group="Robot")
 // @Disabled
-public class turtlautotank extends OpMode{
+public class turtlautotank extends OpMode {
 
     /* Declare OpMode members. */
-    public DcMotor  leftDrive   = null;
-    public DcMotor  Shooter   = null;
-    public DcMotor  Feeder   = null;
-    public DcMotor  rightDrive  = null;
-    public DcMotor  topClaw    = null;
-    public CRServo    leftClaw    = null;
-    public CRServo    rightClaw   = null;
-// determine timers
-private ElapsedTime timer = new ElapsedTime();
-//define variables
-    public static final double SHOOT_MAX_POWER    = 1.0 ;
-    public static final double FEED_POWER    = 0.5 ;
+    public DcMotor leftDrive = null;
+    public DcMotor Shooter = null;
+    public DcMotor Feeder = null;
+    public DcMotor rightDrive = null;
+    public DcMotor topClaw = null;
+    public CRServo leftClaw = null;
+    public CRServo rightClaw = null;
+    // determine timers
+    private ElapsedTime timer = new ElapsedTime();
+    //define variables
+    public static final double SHOOT_MAX_POWER = 1.0;
+    public static final double FEED_POWER = 0.5;
     int position = 0;
-    public static final double SHOOT_REVERSE_POWER    =  -0.6 ;
+    public static final double SHOOT_REVERSE_POWER = -0.6;
     public int currentPosition = 6741;
-    public static final double ARM_UP_POWER    =  0.5 ;   // Run arm motor up at 50% powerswagbackup
-    public static final double ARM_DOWN_POWER  = -0.3 ;   // Run arm motor down at -25% power
+    public static final double ARM_UP_POWER = 0.5;   // Run arm motor up at 50% powerswagbackup
+    public static final double ARM_DOWN_POWER = -0.3;   // Run arm motor down at -25% power
 
     /*
      * Code to run ONCE when the driver hits INIT
@@ -82,31 +82,23 @@ private ElapsedTime timer = new ElapsedTime();
      */
     @Override
     public void init() {
-        IMU imu = hardwareMap.get(IMU.class, "imu");
-        RevHubOrientationOnRobot.LogoFacingDirection logo = RevHubOrientationOnRobot.LogoFacingDirection.RIGHT;
-        RevHubOrientationOnRobot.UsbFacingDirection usb = RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD;
-
-        RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logo, usb);
-        imu.initialize(new IMU.Parameters(orientationOnRobot));
 
         // Define and Initialize Motors
-        leftDrive  = hardwareMap.get(DcMotor.class, "left_drive");
+        leftDrive = hardwareMap.get(DcMotor.class, "left_drive");
         rightDrive = hardwareMap.get(DcMotor.class, "right_drive");
-        topClaw  = hardwareMap.get(DcMotor.class, "top_claw");
-        leftClaw   = hardwareMap.get(CRServo.class, "left_claw");
-        rightClaw  = hardwareMap.get(CRServo.class, "right_claw");
-        Feeder  = hardwareMap.get(DcMotor.class, "Feeder");
-        Shooter  = hardwareMap.get(DcMotor.class, "Shooter");
+        topClaw = hardwareMap.get(DcMotor.class, "top_claw");
+        leftClaw = hardwareMap.get(CRServo.class, "left_claw");
+        rightClaw = hardwareMap.get(CRServo.class, "right_claw");
+        Feeder = hardwareMap.get(DcMotor.class, "Feeder");
+        Shooter = hardwareMap.get(DcMotor.class, "Shooter");
 
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // Pushing the left and right sticks forward MUST make robot go forward. So adjust these two lines based on your first test drive.
         // Note: The settings here assume direct drive on left and right wheels.  Gear Reduction or 90 Deg drives may require direction flips
         rightDrive.setDirection(DcMotor.Direction.REVERSE);
         topClaw.setDirection(DcMotor.Direction.FORWARD);
-        Shooter.setDirection(DcMotor.Direction.REVERSE);
         leftClaw.setDirection(CRServo.Direction.REVERSE);
         rightClaw.setDirection(CRServo.Direction.FORWARD);
-
 
 
         // If there are encoders connected, switch to RUN_USING_ENCODER mode for greater accuracy
@@ -118,7 +110,6 @@ private ElapsedTime timer = new ElapsedTime();
         // Send telemetry message to signify robot waiting;
         telemetry.addData(">", "Robot Ready.  Press START. NOW, I SAID PRESS START. DO ITTTTTTTTT");    //
     }
-
 
 
     /*
@@ -136,49 +127,54 @@ private ElapsedTime timer = new ElapsedTime();
      */
     @Override
     public void start() {
-   timer.reset();
-        leftDrive.setPower(0);
-        rightDrive.setPower(0);
-        while (timer.seconds() < 1.25) {
-leftDrive.setPower(0.5);
-            rightDrive.setPower(0.5);
-        };
-        while (timer.seconds() < 1) {
-            leftDrive.setPower(-0.5);
-            rightDrive.setPower(-0.5);
-        };
-        leftDrive.setPower(0);
-        rightDrive.setPower(0);
+        timer.reset();
+        while (timer.seconds() < 2) {
+            leftDrive.setPower(-0.2);
+            rightDrive.setPower(-0.2);
+        }
+        leftDrive.setPower(-0);
+        rightDrive.setPower(-0);
+        while (timer.seconds() < 4) {
+            Shooter.setPower(0.6);
+        }
+        while (timer.seconds() < 8) {
+            Feeder.setPower(0.9);
+        }
+        while (timer.seconds() < 8.5) {
+            Shooter.setPower(-1);
+        }
+        leftDrive.setPower(-0);
+        rightDrive.setPower(-0);
+        Feeder.setPower(-0);
+        Shooter.setPower(-0);
         telemetry.addData(">", " YeSSIR");
         telemetry.addData(">", " 0)");
         telemetry.addData(">", "(|");
         telemetry.addData(">", "( )");
         telemetry.addData(">", " ya did it :3");
-        }
-
+    }
 
     @Override
     public void loop() {
+        }
 
-        requestOpModeStop();
 
+
+
+
+
+
+    @Override
+    public void stop() {
+        leftDrive.setPower(-0);
+        rightDrive.setPower(-0);
+       Feeder.setPower(-0);
+       Shooter.setPower(-0);
     }
 
-    public DcMotor getLeftDrive() {
-        return leftDrive;
+        /*
+         * Code to run REPEATEDLY after the driver hits START but before they hit STOP
+         */
+
+
     }
-}
-
-
-
-
-
-    /*
-     * Code to run REPEATEDLY after the driver hits START but before they hit STOP
-     */
-
-
-
-
-
-//
