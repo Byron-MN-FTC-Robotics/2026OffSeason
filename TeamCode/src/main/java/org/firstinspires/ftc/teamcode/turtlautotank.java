@@ -150,10 +150,16 @@ public class turtlautotank extends OpMode {
         while (timer.seconds() < 12.5) {
             Shooter.setPower(-1);
         }
-        leftDrive.setPower(-0);
-        rightDrive.setPower(-0);
+        //start drive to the thingy
+        Shooter.setPower(0);
         Feeder.setPower(-0);
-        Shooter.setPower(-0);
+//        while (timer.seconds() < 15) {
+//            leftDrive.setPower(0.5);
+//            rightDrive.setPower(-0.1);
+//        }
+//        leftDrive.setPower(0);
+//        rightDrive.setPower(0);
+
     }
 
     @Override
