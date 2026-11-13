@@ -65,9 +65,9 @@ public class turtltank extends OpMode{
     // determine timers
     private final ElapsedTime timer = new ElapsedTime();
     //define variables
-    public static final double SHOOT_MAX_POWER    = 0.6  ;
+    public static final double SHOOT_MAX_POWER    = 0.7  ;
     public static final double FEED_POWER    = 0.8 ;
-    public static final double SHOOT_REVERSE_POWER    =  -0.6 ;
+    public static final double SHOOT_REVERSE_POWER    =  -0.7 ;
     public static final double ARM_UP_POWER    =  0.5 ;   // Run arm motor up at 50% powerswagbackup
     public static final double ARM_DOWN_POWER  = -0.3 ;   // Run arm motor down at -25% power
 
@@ -148,7 +148,7 @@ public class turtltank extends OpMode{
             } else {
                 Feeder.setPower(-FEED_POWER);
             }
-            if (1125 > Shooter.getVelocity()) {
+            if (1150 > Shooter.getVelocity()) {
                 Shooter.setPower(SHOOT_MAX_POWER);
             }
         } else if (gamepad2.right_bumper) {

@@ -28,7 +28,6 @@
  */
 
 package org.firstinspires.ftc.teamcode;
-
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -64,9 +63,9 @@ public class turtlautotankdrive extends OpMode {
     // determine timers
     private final ElapsedTime timer = new ElapsedTime();
     //define variables
-    public static final double SHOOT_MAX_POWER    = 0.6  ;
+    public static final double SHOOT_MAX_POWER    = 0.7  ;
     public static final double FEED_POWER    = 0.8 ;
-    public static final double SHOOT_REVERSE_POWER    =  -0.6 ;
+    public static final double SHOOT_REVERSE_POWER    =  -0.7 ;
     public static final double ARM_UP_POWER    =  0.5 ;   // Run arm motor up at 50% powerswagbackup
     public static final double ARM_DOWN_POWER  = -0.3 ;   // Run arm motor down at -25% power
 
@@ -102,7 +101,8 @@ public class turtlautotankdrive extends OpMode {
         leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         Shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
+        leftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         // Define and initialize ALL installed servos.
         int position = leftDrive.getCurrentPosition();
         // Send telemetry message to signify robot waiting;
@@ -127,7 +127,7 @@ public class turtlautotankdrive extends OpMode {
     public void start() {
 
         timer.reset();
-        while (timer.seconds() < 2) {
+        while (timer.seconds() < 3.2) {
             leftDrive.setPower(0.25);
             rightDrive.setPower(0.25);
         }
@@ -138,20 +138,29 @@ public class turtlautotankdrive extends OpMode {
         rightDrive.setPower(-0);
         Feeder.setPower(-0);
         Shooter.setPower(-0);
-        telemetry.addData(">", " YeSSIR");
-        telemetry.addData(">", " 0)");
-        telemetry.addData(">", "(|");
-        telemetry.addData(">", "( )");
-        telemetry.addData(">", " ya did it :3");
+  timer.reset();
     }
 
     @Override
     public void loop() {
+        telemetry.clearAll();
+        if (timer.seconds() > 0) {
+            telemetry.addData(">", " YeSSIR");
+            telemetry.addData(">", " 0)");
+            telemetry.addData(">", "(|");
+            telemetry.addData(">", "( )");
+            telemetry.addData(">", " ya did it :3");
+        } else if (timer.seconds() > 1) {
+            telemetry.addData(">", " YeSSIR");
+            telemetry.addData(">", "(0");
+            telemetry.addData(">", " |)");
+            telemetry.addData(">", "/ )");
+            telemetry.addData(">", " ya did it :3");
+        } else if (timer.seconds() > 2) {
+timer.reset();
         }
-
-
-
-
+        telemetry.update();
+    }
 
 
 
