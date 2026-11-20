@@ -64,13 +64,6 @@ public class turtltank extends OpMode{
     public CRServo    rightClaw   = null;
     // determine timers
     private final ElapsedTime timer = new ElapsedTime();
-    //define variables
-    public static final double SHOOT_MAX_POWER    = 0.7  ;
-    public static final double FEED_POWER    = 0.8 ;
-    public static final double SHOOT_REVERSE_POWER    =  -0.7 ;
-    public static final double ARM_UP_POWER    =  0.5 ;   // Run arm motor up at 50% powerswagbackup
-    public static final double ARM_DOWN_POWER  = -0.3 ;   // Run arm motor down at -25% power
-
     /*
      * Code to run ONCE when the driver hits INIT
      */
@@ -144,16 +137,18 @@ public class turtltank extends OpMode{
         // Use triggers to run the good ol shooter! (right trigger shoot and right bumper to unshoot/unjam idk whatever ya wanna call it
         if (gamepad2.right_trigger>0.2) {
             if (1100 < Shooter.getVelocity()) {
-                Feeder.setPower(FEED_POWER);
+                Feeder.setPower(globalvar.FEED_POWER);
             } else {
-                Feeder.setPower(-FEED_POWER);
+                Feeder.setPower(-globalvar.FEED_POWER);
             }
-            if (1150 > Shooter.getVelocity()) {
-                Shooter.setPower(SHOOT_MAX_POWER);
+            if (1125 > Shooter.getVelocity()) {
+                Shooter.setPower(globalvar.SHOOT_MAX_POWER);
+            } else {
+                Shooter.setPower(0);
             }
         } else if (gamepad2.right_bumper) {
-            Feeder.setPower(-FEED_POWER);
-            Shooter.setPower(SHOOT_REVERSE_POWER);
+            Feeder.setPower(-globalvar.FEED_POWER);
+            Shooter.setPower(globalvar.SHOOT_REVERSE_POWER);
             timer.reset();
         }
         else
@@ -166,13 +161,13 @@ public class turtltank extends OpMode{
 
         // Use gamepad buttons to move the arm up (Y) and down (A)
         if (gamepad2.y) {
-            topClaw.setPower(ARM_UP_POWER);
-            leftClaw.setPower(ARM_UP_POWER);
-            rightClaw.setPower(ARM_UP_POWER);
+            topClaw.setPower(globalvar.ARM_UP_POWER);
+            leftClaw.setPower(globalvar.ARM_UP_POWER);
+            rightClaw.setPower(globalvar.ARM_UP_POWER);
         } else if (gamepad2.a) {
-            topClaw.setPower(ARM_DOWN_POWER);
-            leftClaw.setPower(ARM_DOWN_POWER);
-            rightClaw.setPower(ARM_DOWN_POWER);
+            topClaw.setPower(globalvar.ARM_DOWN_POWER);
+            leftClaw.setPower(globalvar.ARM_DOWN_POWER);
+            rightClaw.setPower(globalvar.ARM_DOWN_POWER);
         }
         else
         {  topClaw.setPower(0.0);
@@ -187,9 +182,9 @@ public class turtltank extends OpMode{
         telemetry.addData("shoot-speed", "%.2f", Shooter.getVelocity());
 
         if (gamepad1.right_bumper) {
-            telemetry.addData("flywheel_set_speed", "%.2f", SHOOT_REVERSE_POWER);
+            telemetry.addData("flywheel_set_speed", "%.2f", globalvar.SHOOT_REVERSE_POWER);
         } else {
-            telemetry.addData("flywheel_set_speed", "%.2f", gamepad1.right_trigger * SHOOT_MAX_POWER);
+            telemetry.addData("flywheel_set_speed", "%.2f", gamepad1.right_trigger * globalvar.SHOOT_MAX_POWER);
         };
 
     }

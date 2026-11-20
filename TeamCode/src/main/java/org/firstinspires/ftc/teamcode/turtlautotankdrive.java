@@ -144,20 +144,20 @@ public class turtlautotankdrive extends OpMode {
     @Override
     public void loop() {
         telemetry.clearAll();
-        if (timer.seconds() > 0) {
-            telemetry.addData(">", " YeSSIR");
-            telemetry.addData(">", " 0)");
-            telemetry.addData(">", "(|");
-            telemetry.addData(">", "( )");
-            telemetry.addData(">", " ya did it :3");
+        if (timer.seconds() >  2) {
+            timer.reset();
         } else if (timer.seconds() > 1) {
             telemetry.addData(">", " YeSSIR");
             telemetry.addData(">", "(0");
             telemetry.addData(">", " |)");
             telemetry.addData(">", "/ )");
             telemetry.addData(">", " ya did it :3");
-        } else if (timer.seconds() > 2) {
-timer.reset();
+        } else if (timer.seconds() > 0) {
+            telemetry.addData(">", " YeSSIR");
+            telemetry.addData(">", " 0)");
+            telemetry.addData(">", "(|");
+            telemetry.addData(">", "( )");
+            telemetry.addData(">", " ya did it :3");
         }
         telemetry.update();
     }

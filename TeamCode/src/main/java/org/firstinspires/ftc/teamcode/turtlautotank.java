@@ -66,12 +66,6 @@ public class turtlautotank extends OpMode {
     // determine timers
     private final ElapsedTime timer = new ElapsedTime();
     //define variables
-    public static final double SHOOT_MAX_POWER    = 0.7  ;
-    public static final double FEED_POWER    = 0.8 ;
-    public static final double SHOOT_REVERSE_POWER    =  -0.7 ;
-    public static final double ARM_UP_POWER    =  0.5 ;   // Run arm motor up at 50% powerswagbackup
-    public static final double ARM_DOWN_POWER  = -0.3 ;   // Run arm motor down at -25% power
-
     /*
      * Code to run ONCE when the driver hits INIT
      *
@@ -135,20 +129,17 @@ public class turtlautotank extends OpMode {
         leftDrive.setPower(-0);
         rightDrive.setPower(-0);
 
-        while (timer.seconds() < 12) {
-                if (1100 < Shooter.getVelocity()) {
-                    Feeder.setPower(FEED_POWER);
+        while (timer.seconds() < 15) {
+                if (1110 < Shooter.getVelocity()) {
+                    Feeder.setPower(globalvar.FEED_POWER);
                 } else {
                     Feeder.setPower(-0.8);
                 }
-                if (1150 > Shooter.getVelocity()) {
-                    Shooter.setPower(SHOOT_MAX_POWER);
+                if (1125 > Shooter.getVelocity()) {
+                    Shooter.setPower(globalvar.SHOOT_MAX_POWER);
                 } else {
                     Shooter.setPower(0);
                 }
-        }
-        while (timer.seconds() < 12.5) {
-            Shooter.setPower(-1);
         }
         //start drive to the thingy
         Shooter.setPower(0);
@@ -165,20 +156,20 @@ public class turtlautotank extends OpMode {
     @Override
     public void loop() {
         telemetry.clearAll();
-        if (timer.seconds() > 0) {
-            telemetry.addData(">", " YeSSIR");
-            telemetry.addData(">", " 0)");
-            telemetry.addData(">", "(|");
-            telemetry.addData(">", "( )");
-            telemetry.addData(">", " ya did it :3");
+        if (timer.seconds() >  2) {
+            timer.reset();
         } else if (timer.seconds() > 1) {
             telemetry.addData(">", " YeSSIR");
             telemetry.addData(">", "(0");
             telemetry.addData(">", " |)");
             telemetry.addData(">", "/ )");
             telemetry.addData(">", " ya did it :3");
-        } else if (timer.seconds() > 2) {
-            timer.reset();
+        } else if (timer.seconds() > 0) {
+            telemetry.addData(">", " YeSSIR");
+            telemetry.addData(">", " 0)");
+            telemetry.addData(">", "(|");
+            telemetry.addData(">", "( )");
+            telemetry.addData(">", " ya did it :3");
         }
         telemetry.update();
         }
@@ -191,10 +182,7 @@ public class turtlautotank extends OpMode {
 
     @Override
     public void stop() {
-        leftDrive.setPower(-0);
-        rightDrive.setPower(-0);
-       Feeder.setPower(-0);
-       Shooter.setPower(-0);
+
     }
 
         /*
